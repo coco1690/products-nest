@@ -1,4 +1,5 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { ImagesProducts } from "./images-products.entity";
 
 
 // PASO CERO CREAR LA ENTIDAD Y LUEGO IR A PRODUCTS MODEL Y PASAR LA ENTIDAD 'PRODUCT' EN EL MODELO 
@@ -50,8 +51,18 @@ export class Product {
     })
     tags:string[];
 
-    //tags
-    //images
+    @OneToMany(
+        () => ImagesProducts,
+        (imageProducts) => imageProducts.product,
+        { cascade: true }
+    )
+    images?:ImagesProducts[];
+
+
+
+
+
+
 
 
     //METODOS ANTES DE LA INSERCION DE DATOS A LA DB

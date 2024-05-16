@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
 import { PaginationDto } from '../common/dtos/pagination.dto';
 import { validate as isUUID } from "uuid"; // 1.yarn add uuid  2.yarn add -D @types/uuid
+import { ImagesProducts,Product } from './entities';
 
 
 
@@ -20,18 +20,27 @@ export class ProductsService {
 constructor(
 
   @InjectRepository( Product )
-  private readonly productRepository: Repository<Product>
+  private readonly productRepository: Repository<Product>,
+
+  @InjectRepository( ImagesProducts )
+  private readonly imagesProductsRepository: Repository<ImagesProducts>
 
 ) {}
   
 
-  // CREO EL PRODUCTO
+  // ###################  CREO EL PRODUCTO ################### 
 
   async create(createProductDto: CreateProductDto){
-
+  
     try {
+
+      const { images = [], ...productDetails } = createProductDto
       
-      const product = this.productRepository.create( createProductDto ) 
+      const product = this.productRepository.create({
+        ...productDetails,
+        images: images.map( image => this.imagesProductsRepository.create({ url: image}))
+      }) 
+
       await this.productRepository.save( product );  
       return product;
     
@@ -41,7 +50,7 @@ constructor(
   }
 
 
-  // TRAE TODOS LOS PRODUCTOS Y LOS PAGINA
+  // ###################  TRAE TODOS LOS PRODUCTOS Y LOS PAGINA ################### 
 
   findAll( paginationDto : PaginationDto ) {
 
@@ -54,7 +63,7 @@ constructor(
   }
 
 
-  // BUSCA LOS PRODUCTOS POR ID 
+  // ###################  BUSCA LOS PRODUCTOS POR ID Y SLUG ################### 
 
   async findOne(term: string) {
 
@@ -79,21 +88,25 @@ constructor(
   }
 
 
-  // ACTUALIZA LOS PRODUCTOS 
+  //################### ACTUALIZA LOS PRODUCTOS #####################
 
   async update(id: string, updateProductDto: UpdateProductDto) {
     
+    // ( preload )..PRECARGA LOS DATOS PRIMERO ANTES DE ACTUALIZARLOS
     const product = await this.productRepository.preload({
       id:id,
-      ...updateProductDto
+      ...updateProductDto,
+      images:[]
     })
-
+    // SI EL PRODUCTO NO EXISTE MANDA UN ERROR
     if( !product ) throw new NotFoundException(` Product with id: ${ id } not found`)
 
     try {
+      // GUARDA EL PRODUCTO
       await this.productRepository.save( product )
+      // ACTUALIZA EL PRODUCTO EN DB
       return  product  
-         
+
     } catch (error) {
       this.handleDBExeptions(error)
     }
@@ -103,7 +116,7 @@ constructor(
   }
 
 
-  // ELIMINA EL PRODUCTO POR ID
+  // ###################  ELIMINA EL PRODUCTO POR ID ################### 
 
   async remove(id: string) {
 
@@ -113,7 +126,7 @@ constructor(
   }
 
 
-  // METODO PRIVADO PARA MANEJO DE ERRORES
+  // ###################  METODO PRIVADO PARA MANEJO DE ERRORES ################### 
 
   private handleDBExeptions(error: any){
 
