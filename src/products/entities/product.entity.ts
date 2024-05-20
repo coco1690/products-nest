@@ -5,7 +5,7 @@ import { ImagesProducts } from "./images-products.entity";
 // PASO CERO CREAR LA ENTIDAD Y LUEGO IR A PRODUCTS MODEL Y PASAR LA ENTIDAD 'PRODUCT' EN EL MODELO 
 // TypeOrmModule.forFeature([ Product ])
 
-@Entity()
+@Entity({ name: 'products'})
 export class Product {
 
     @PrimaryGeneratedColumn('uuid')
@@ -54,7 +54,7 @@ export class Product {
     @OneToMany(
         () => ImagesProducts,
         (imageProducts) => imageProducts.product,
-        { cascade: true }
+        { cascade: true, eager:true }
     )
     images?:ImagesProducts[];
 

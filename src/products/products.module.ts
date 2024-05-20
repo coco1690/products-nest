@@ -13,6 +13,10 @@ import { ImagesProducts, Product } from './entities';
     
     //IMPORTO LA ENTIDAD 'PRODUCT' AL MODELO
     TypeOrmModule.forFeature([ Product, ImagesProducts ])
-  ]
+  ],
+  exports: [ 
+    ProductsService,
+    TypeOrmModule
+  ],
 })
 export class ProductsModule {}
