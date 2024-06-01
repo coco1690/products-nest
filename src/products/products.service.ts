@@ -7,6 +7,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from '../common/dtos/pagination.dto';
 import { validate as isUUID } from "uuid"; // 1.yarn add uuid  2.yarn add -D @types/uuid
 import { ImagesProducts,Product } from './entities';
+import { User } from 'src/auth/entities/user.entity';
 
 
 
@@ -35,7 +36,7 @@ constructor(
 
   // ###################  CREO EL PRODUCTO ################### 
 
-  async create(createProductDto: CreateProductDto){
+  async create(createProductDto: CreateProductDto, user:User){
   
     try {
 
@@ -43,7 +44,8 @@ constructor(
       
       const product = this.productRepository.create({
         ...productDetails,
-        images: images.map( image => this.imagesProductsRepository.create({ url: image }))
+        images: images.map( image => this.imagesProductsRepository.create({ url: image })),
+        user,
       }) 
 
       await this.productRepository.save( product );  
@@ -100,7 +102,7 @@ constructor(
 
   //################### ACTUALIZA LOS PRODUCTOS #####################
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, user: User) {
     
     // ( preload )..PRECARGA LOS DATOS PRIMERO ANTES DE ACTUALIZARLOS
     const { images, ...toUpdate } = updateProductDto;
@@ -132,6 +134,8 @@ constructor(
       } else{
         product.images = await this.imagesProductsRepository.findBy({ product:{id}});
       }
+
+      product.user = user // antes de guardar agrego el usuario que viene relacionado en la entidad userid
 
       // ACA NO IMPACTO EN LA BD TODAVIA
       await queryRunner.manager.save( product );

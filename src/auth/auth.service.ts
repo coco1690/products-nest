@@ -56,7 +56,6 @@ export class AuthService {
   }
 
 
-
   // ##############  HAGO LOGIN  ####################
 
   async login( loginUserDto: LoginUserDto ) {
@@ -82,6 +81,16 @@ export class AuthService {
       //TODO: retornar el JWT 
   }
 
+  // ######### ENVIO LOS DATOS DE USUSARIO CON UN NUEVO TOKEN AL FRONTEND ########
+
+  async checkAuthStatus( user: User){
+
+    delete user.roles
+    return {
+      ...user,
+      token: this.getJwToken( { id: user.id })
+    }
+  }
 
 
   //###########   methods   ####################
